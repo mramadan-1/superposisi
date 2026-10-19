@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulasi Teorema Superposisi – Rangkaian Listrik AC</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>⚡ Simulasi Teorema Superposisi pada Rangkaian AC</h1>
+  <p>Laboratorium virtual – Rangkaian Listrik AC (nilai RMS, fasor)</p>
+</header>
+<main>
+  <div id="pesan" class="error" role="alert" hidden></div>
+
+  <section class="card utama" aria-labelledby="hRangkaian">
+    <h2 id="hRangkaian">Rangkaian</h2>
+    <div class="tombol" role="toolbar" aria-label="Kontrol simulasi">
+      <button id="bMulai" class="aksen" aria-pressed="false">▶ Mulai Simulasi</button>
+      <button id="bJeda" aria-pressed="true">⏸ Jeda Animasi</button>
+      <button id="bReset">↺ Reset</button>
+    </div>
+    <div class="tombol" role="group" aria-label="Pilihan analisis">
+      <button id="bS1" class="c1" aria-pressed="false" title="Sumber 2 diganti hubung singkat">Sumber 1 Aktif</button>
+      <button id="bS2" class="c2" aria-pressed="false" title="Sumber 1 diganti hubung singkat">Sumber 2 Aktif</button>
+      <button id="bBoth" class="ct" aria-pressed="true">Kedua Sumber Aktif</button>
+      <button id="bBand">Bandingkan Hasil</button>
+    </div>
+    <svg id="rangkaian" viewBox="0 0 700 340" role="img" aria-label="Diagram rangkaian: dua sumber AC masing-masing melalui resistor ke node keluaran, lalu Rbeban seri induktor ke ground">
+      <style>
+        #rangkaian text{font:13px system-ui,sans-serif;fill:#212529}
+        #rangkaian .w{fill:none;stroke:#343a40;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+        #rangkaian .t1{fill:#e8590c;font-weight:700}#rangkaian .t2{fill:#1c7ed6;font-weight:700}#rangkaian .tt{fill:#2f9e44;font-weight:700}
+        #rangkaian .dots{fill:none;stroke-width:6;stroke-linecap:round;stroke-dasharray:0.1 16}
+      </style>
+      <!-- kawat -->
+      <path class="w" d="M60,60 V70 M60,110 V310 H640 V150 H580 M500,150 H480 M400,150 H330"/>
+      <path class="w" d="M60,60 H110 M190,60 H330 V150 M60,210 V220 M60,260 V310 M60,210 H110 M190,210 H330 V150"/>
+      <!-- R1, R2, Rb, L -->
+      <polyline class="w" fill="none" points="110,60 120,48 135,72 150,48 165,72 180,48 190,60"><title>R1: resistor cabang sumber 1</title></polyline>
+      <polyline class="w" fill="none" points="110,210 120,198 135,222 150,198 165,222 180,198 190,210"><title>R2: resistor cabang sumber 2</title></polyline>
+      <polyline class="w" fill="none" points="400,150 410,138 425,162 440,138 455,162 470,138 480,150"><title>Rb: resistor beban</title></polyline>
+      <path class="w" d="M500,150 a10,10 0 0 1 20,0 a10,10 0 0 1 20,0 a10,10 0 0 1 20,0 a10,10 0 0 1 20,0"><title>L: induktor beban, Z = jωL</title></path>
+      <!-- sumber 1 -->
+      <g id="s1on"><circle cx="60" cy="90" r="20" fill="#fff4e6" stroke="#e8590c" stroke-width="3"/><path d="M48,90 q6,-12 12,0 t12,0" fill="none" stroke="#e8590c" stroke-width="2.5"/><text x="66" y="76" class="t1">+</text><title>Sumber tegangan AC 1</title></g>
+      <path id="s1off" d="M60,70 V110" stroke="#e8590c" stroke-width="5" fill="none" style="display:none"><title>Sumber 1 nonaktif = hubung singkat</title></path>
+      <!-- sumber 2 -->
+      <g id="s2on"><circle cx="60" cy="240" r="20" fill="#e7f5ff" stroke="#1c7ed6" stroke-width="3"/><path d="M48,240 q6,-12 12,0 t12,0" fill="none" stroke="#1c7ed6" stroke-width="2.5"/><text x="66" y="226" class="t2">+</text><title>Sumber tegangan AC 2</title></g>
+      <path id="s2off" d="M60,220 V260" stroke="#1c7ed6" stroke-width="5" fill="none" style="display:none"><title>Sumber 2 nonaktif = hubung singkat</title></path>
+      <!-- node & ground -->
+      <circle cx="330" cy="150" r="6" fill="#2f9e44"><title>Node keluaran</title></circle>
+      <path d="M350,310 V320 M336,320 H364 M341,327 H359 M346,334 H354" stroke="#343a40" stroke-width="2.5" fill="none"><title>Ground</title></path>
+      <!-- Vout -->
+      <path d="M290,158 V302" stroke="#2f9e44" stroke-width="2" stroke-dasharray="5 4" fill="none"/>
+      <path d="M284,296 L290,306 L296,296 Z" fill="#2f9e44"/>
+      <text x="270" y="162" class="tt">+</text><text x="270" y="304" class="tt">−</text>
+      <!-- arus animasi -->
+      <path id="d1" class="dots" stroke="#e8590c" d="M60,70 V60 H330 V150"/>
+      <path id="d2" class="dots" stroke="#1c7ed6" d="M60,220 V210 H330 V150"/>
+      <path id="db" class="dots" stroke="#2f9e44" d="M330,150 H640 V310"/>
+      <!-- arah referensi arus -->
+      <path d="M215,36 H245" stroke="#e8590c" stroke-width="2"/><path d="M245,31 L254,36 L245,41Z" fill="#e8590c"/>
+      <path d="M215,186 H245" stroke="#1c7ed6" stroke-width="2"/><path d="M245,181 L254,186 L245,191Z" fill="#1c7ed6"/>
+      <path d="M520,112 H550" stroke="#2f9e44" stroke-width="2"/><path d="M550,107 L559,112 L550,117Z" fill="#2f9e44"/>
+      <!-- label -->
+      <text x="88" y="86" id="lv1" class="t1"></text><text x="88" y="102" id="st1" font-size="11"></text>
+      <text x="88" y="236" id="lv2" class="t2"></text><text x="88" y="252" id="st2" font-size="11"></text>
+      <text x="150" y="40" id="lr1" text-anchor="middle"></text><text x="150" y="190" id="lr2" text-anchor="middle"></text>
+      <text x="200" y="85" id="li1" class="t1"></text><text x="200" y="235" id="li2" class="t2"></text>
+      <text x="440" y="190" id="lrb" text-anchor="middle"></text><text x="540" y="190" id="llb" text-anchor="middle"></text>
+      <text x="400" y="215" id="lzb"></text><text x="440" y="100" id="lib" class="tt"></text>
+      <text x="280" y="278" id="lvo" class="tt" text-anchor="end"></text>
+      <text x="360" y="22" id="waktu" font-size="12" fill="#868e96"></text>
+    </svg>
+    <p class="mini">Arah referensi: I₁ dan I₂ dari sumber menuju node; Ib dari node ke ground; Vout positif di node terhadap ground. Titik arus bergerak <em>bolak-balik</em> (arus AC), bukan searah. Waktu animasi diperlambat.</p>
+  </section>
+
+  <section class="card" aria-labelledby="hKontrol">
+    <h2 id="hKontrol">Parameter</h2>
+    <div id="kontrol"></div>
+  </section>
+
+  <section class="card" aria-labelledby="hHasil">
+    <h2 id="hHasil">Hasil perhitungan</h2>
+    <div class="scroll"><table>
+      <thead><tr><th>Besaran</th><th>Bentuk a + jb</th><th>Polar</th><th>RMS</th><th>Fase</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table></div>
+    <p id="statusMode" class="mini"></p>
+  </section>
+
+  <section class="card" aria-labelledby="hFasor">
+    <h2 id="hFasor">Diagram fasor</h2>
+    <label class="cek"><input type="checkbox" id="putar"> Putar fasor pada frekuensi terpilih (saat animasi berjalan)</label>
+    <canvas id="fasor" aria-label="Diagram fasor Vout1, Vout2, dan Vout total"></canvas>
+    <p class="mini"><span class="sw c1"></span>Vout1 &nbsp;<span class="sw c2"></span>Vout2 (digeser ke ujung Vout1; garis putus = dari titik asal) &nbsp;<span class="sw ct"></span>Vout total.</p>
+  </section>
+
+  <section class="card" aria-labelledby="hGel">
+    <h2 id="hGel">Gelombang tegangan</h2>
+    <div class="cekrow">
+      <label class="cek"><input type="checkbox" id="w1" checked><span class="sw c1"></span>v₁(t)</label>
+      <label class="cek"><input type="checkbox" id="w2" checked><span class="sw c2"></span>v₂(t)</label>
+      <label class="cek"><input type="checkbox" id="wo" checked><span class="sw ct"></span>vout(t)</label>
+    </div>
+    <canvas id="gelombang" aria-label="Grafik gelombang tegangan terhadap waktu"></canvas>
+    <p class="mini">v(t) = √2·Vrms·cos(2πft + φ). vout(t) berasal dari fasor Vout hasil analisis rangkaian, bukan penjumlahan v₁ + v₂. Sumber nonaktif = 0 V.</p>
+  </section>
+
+  <section id="bandingkan" class="card" aria-labelledby="hBand">
+    <h2 id="hBand">Perbandingan: superposisi vs kedua sumber aktif</h2>
+    <div id="banding"></div>
+  </section>
+
+  <section id="teori" class="card lebar" aria-labelledby="hTeori">
+    <h2 id="hTeori">Teori &amp; langkah perhitungan (mengikuti parameter Anda)</h2>
+    <div id="teoriIsi"></div>
+  </section>
+
+  <section class="card lebar" aria-labelledby="hPetunjuk">
+    <h2 id="hPetunjuk">Petunjuk penggunaan</h2>
+    <ol>
+      <li>Ubah nilai pada panel <b>Parameter</b> (slider atau ketik angka). Semua tampilan diperbarui otomatis.</li>
+      <li>Pilih <b>Sumber 1 Aktif</b>, <b>Sumber 2 Aktif</b>, atau <b>Kedua Sumber Aktif</b>. Sumber yang nonaktif diganti kawat (hubung singkat), bukan rangkaian terbuka.</li>
+      <li>Tekan <b>Mulai Simulasi</b> untuk menggerakkan arus dan penanda waktu; <b>Jeda Animasi</b> untuk menghentikan; <b>Reset</b> untuk kembali ke nilai awal.</li>
+      <li>Tekan <b>Bandingkan Hasil</b> untuk melihat apakah Vout1 + Vout2 sama dengan Vout kedua sumber aktif.</li>
+      <li>Baca langkah perhitungan pada panel teori; angkanya sesuai nilai yang sedang Anda pakai.</li>
+    </ol>
+  </section>
+</main>
+<footer>Simulasi pendidikan – semua perhitungan dilakukan di browser (JavaScript).</footer>
+<script src="script.js"></script>
+</body>
+</html>
